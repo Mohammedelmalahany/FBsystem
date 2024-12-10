@@ -1,4 +1,8 @@
-package org.example;
+package User;
+
+import Friend.Friend;
+import Post.Post;
+import Conversation.Conversation;
 
 import java.util.*;
 
@@ -9,7 +13,7 @@ public class User {
     private Gender gender;
     private Date birthdate;
     private List<Post> posts;
-    private List<clsFriend> friends;
+    private List<Friend> friends;
     private List<Conversation> conversations;
 
     public User(String email, String name, String password, Gender gender, Date birthdate) {
@@ -96,3 +100,4 @@ public class User {
     public boolean validatePassword(String inputPassword) {
         return this.password.equals(inputPassword);
     }
+}
