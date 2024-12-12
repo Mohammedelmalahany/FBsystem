@@ -39,47 +39,11 @@ public class message {
     
     public String toString() {
         return
-                "\n Message From:'" + sender + '\'' +
+                "\n Message From:'" + get.username() + '\'' +
                 "\n Message:'" + content + '\'' +
                 "\n Date/time:" + getFormattedTimestamp() + "\nMessageId:" + messageId +' ' ;
     }
 }
 
-/*
-*main*
-import java.util.InputMismatchException;
-import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-
-        Scanner scanner = new Scanner(System.in);
-        int choice;
-        do{
-
-            System.out.print("Enter your name: ");//get.username()
-            String senderName = scanner.nextLine();
-            System.out.print("Enter your message: ");
-            String messageContent = scanner.nextLine();
-            message message = new message(messageContent, senderName);
-            System.out.println(message);
-            System.out.println("press one to send a new message:");
-            choice = scanner.nextInt();
-            scanner.nextLine();
-            while (true) {
-                try {
-                    System.out.println("Press 1 to send another message, or any other number to exit:");
-                    choice = scanner.nextInt();
-                    scanner.nextLine();
-                    break;
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid input! Please enter a valid number.");
-                    scanner.nextLine();
-                }
-            }
-
-        }while(choice ==1);
-    }
-}*/
 
 
