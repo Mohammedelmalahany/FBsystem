@@ -57,7 +57,7 @@ public class Main {
         int choice;
         do{
 
-            System.out.print("Enter your name: ");
+            System.out.print("Enter your name: ");//get.username()
             String senderName = scanner.nextLine();
             System.out.print("Enter your message: ");
             String messageContent = scanner.nextLine();
