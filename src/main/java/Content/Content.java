@@ -8,10 +8,6 @@ public class Content {
     protected List<User> likes, dislikes;
     protected List<Comment> comments;
 
-    public Content (){
-        //unique iD for like or dislike
-        iD++;
-    }
     public Content (String content){
         //content of comment or post
         this.content = content;
