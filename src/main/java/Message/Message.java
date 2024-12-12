@@ -79,8 +79,6 @@ public class Main {
             }
 
         }while(choice ==1);
-
-        scanner.close(); // Close the scanner
     }
 }*/
 
