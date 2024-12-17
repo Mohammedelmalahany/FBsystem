@@ -1,11 +1,22 @@
 package Message;
 import Content.Content;
 import User.User;
+import java.util.Date;public class Message extends Content {
 
-import java.util.Date;
+    private int conversationId;
 
-public class Message extends Content {
-    private int messageId;
-    private User sender;
-    private Date timestamp;
+    public Message(int id, String content, int conversationId, int userid) {
+        super(id, content,userid);
+        this.conversationId = conversationId;
+    }
+
+    public int getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(int conversationId) {
+        this.conversationId = conversationId;
+    }
+
+
 }

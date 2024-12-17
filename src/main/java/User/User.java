@@ -1,103 +1,76 @@
 package User;
-
 import Friend.Friend;
 import Post.Post;
 import Conversation.Conversation;
-
 import java.util.*;
 
-public class User {
-    private String email;
-    private String name;
-    private String password;
-    private Gender gender;
-    private Date birthdate;
-    private List<Post> posts;
-    private List<Friend> friends;
-    private List<Conversation> conversations;
 
-    public User(String email, String name, String password, Gender gender, Date birthdate) {
+public class User {
+    private int id;
+    private String username;
+    private String email;
+    private String password;
+    private String gender;
+    private Date birthdate;
+    private List<Integer> friendIds; // قائمة معرفات الأصدقاء
+
+    public User(int id, String username, String email, String password, String gender, Date birthdate) {
+        this.id = id;
+        this.username = username;
         this.email = email;
-        this.name = name;
         this.password = password;
         this.gender = gender;
         this.birthdate = birthdate;
-        this.posts = new ArrayList<>();
-        this.friends = new ArrayList<>();
-        this.conversations = new ArrayList<>();
+        this.friendIds = new ArrayList<>();
     }
 
-    private enum Gender {
-        MALE, FEMALE;
+    // Getters and Setters
+    public int getId() {
+        return id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public List<Post> getPosts() {
-        return new ArrayList<>(this.posts);
+    public String getEmail() {
+        return email;
     }
 
-    public List<User> getFriends() {
-        return new ArrayList<>(this.friends);
+    public String getPassword() {
+        return password;
     }
 
-    public void addPost(String content, String privacy) {
-        posts.add(new Post(content, privacy));
+    public String getGender() {
+        return gender;
     }
 
-    public List<Post> getCommonPosts(User otherUser) {
-        List<Post> commonPosts = new ArrayList<>();
-        for (Post post : otherUser.getPosts()) {
-            if (post.getTaggedUsers().contains(this)) {
-                commonPosts.add(post);
-            }
-        }
-        for (Post post : this.getPosts()) {
-            if (post.getTaggedUsers().contains(otherUser)) {
-                commonPosts.add(post);
-            }
-        }
-        return commonPosts;
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
-    public List<User> getMutualFriends(User otherUser) {
-        List<User> mutualFriends = new ArrayList<>();
-        for (User friend : this.friends) {
-            if (otherUser.getFriends().contains(friend)) {
-                mutualFriends.add(friend);
-            }
-        }
-        return mutualFriends;
+    public Date getBirthdate() {
+        return birthdate;
     }
 
-    public boolean addFriend(User friend) {
-        if (friend == null) {
-            throw new IllegalArgumentException("Friend cannot be null.");
-        }
-        if (this.friends.contains(friend)) {
-            return false;
-        }
-        this.friends.add(friend);
-        return true;
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
     }
-
-    public void createConversation(List<User> participants) {
-        if (participants == null || participants.isEmpty()) {
-            throw new IllegalArgumentException("Participants cannot be null or empty.");
-        }
-        Conversation newConversation = new Conversation(participants);
-        this.conversations.add(newConversation);
-    }
-
-    public void showConversations() {
-        for (Conversation conversation : conversations) {
-            System.out.println(conversation);
+    public void FriendIds() {
+        for (Integer i : friendIds){
+            System.out.println(i);
         }
     }
 
-    public boolean validatePassword(String inputPassword) {
-        return this.password.equals(inputPassword);
+    public List<Integer> getFriendIds() {
+        return friendIds;
     }
+
+    public void addFriendId(int friendId) {
+        if (!friendIds.contains(friendId)) {
+            friendIds.add(friendId);
+        }
+    }
+
+
 }
