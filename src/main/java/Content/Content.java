@@ -1,8 +1,6 @@
 package Content;
 import User.User;
-import java.util.List;
-import java.util.ArrayList;
-
+import java.util.*;
 public class Content {
     private int id;
     private int userId;
