@@ -9,11 +9,13 @@ import java.util.List;
 public class Conversation {
     private int id;
     private List<Integer> userIds;
+    private String conversation_name;
 
     // Constructor
-    public Conversation(int id) {
+    public Conversation(int id,String conversation_name ) {
         this.id = id;
         this.userIds = new ArrayList<>();
+        this.conversation_name = conversation_name;
     }
 
     // Getter و Setter للـ id

@@ -1,6 +1,4 @@
 package FileManager;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -179,7 +177,6 @@ public class FileManager {
         int userId = Integer.parseInt(basicInfo[1]);
         String privacy = basicInfo[2];
 
-
         StringBuilder contentBuilder = new StringBuilder();
         for (int i = 1; i < lines.length; i++) {
             String line = lines[i].trim();
@@ -188,7 +185,6 @@ public class FileManager {
             }
             contentBuilder.append(line).append("\n");
         }
-
 
         String content = contentBuilder.toString().trim();
 
@@ -239,7 +235,6 @@ public class FileManager {
         int postId = Integer.parseInt(basicInfo[2]);
         Integer parentCommentId = (basicInfo[3].isEmpty() || basicInfo[3].equals("NULL")) ? null : Integer.parseInt(basicInfo[3]);
 
-
         StringBuilder contentBuilder = new StringBuilder();
         for (int i = 1; i < lines.length; i++) {
             String line = lines[i].trim();
@@ -281,11 +276,7 @@ public class FileManager {
         try {
 
             String content = Files.readString(Path.of(CONVERSATIONS_FILE));
-
-
             String[] blocks = content.split("\\r?\\n\\r?\\n");
-
-
             for (String block : blocks) {
                 processConversationBlock(block.trim(), dataStore);
             }
@@ -307,7 +298,7 @@ public class FileManager {
         int conversationId = Integer.parseInt(firstLine);
 
         // إنشاء كائن Conversation
-        Conversation conversation = new Conversation(conversationId);
+        Conversation conversation = new Conversation(conversationId,"name");
 
         // بناء المحتوى بعد السطر الأول
         StringBuilder contentBuilder = new StringBuilder();
@@ -588,8 +579,6 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-
-
 
 
 }

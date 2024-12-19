@@ -6,11 +6,13 @@ import User.User;
 import java.util.*;public class Post extends Content {
 
     private String privacy;
+    List<String>usernames;
 
 
     public Post(int id, String content, String privacy, int userId) {
         super(id, content,userId);
         this.privacy = privacy;
+        usernames = new ArrayList<>();
 
     }
 

@@ -24,7 +24,7 @@ public class ProgDisplay {
             System.out.print("Your choice: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine();
+
 
             switch (choice) {
                 case 1:
@@ -125,6 +125,60 @@ public class ProgDisplay {
             return null;
         }
     }
+
+    private static void userActions(Scanner scanner) {
+        while (true) {
+            System.out.println("\n--- User Actions ---");
+            System.out.println("1. Browse the main menu");
+            //show posts according to the privacy level then
+            // To make the user interact with posts after they are shown to him,
+            // we can create a function that displays posts one by one,
+            // and then asks the user to choose whether he wants to interact with the current post (write a comment, like, etc.).
+            // We'll add a mechanism that allows them to choose between "Engage", "Skip to next post", or "Exit".
+            //after engage read the last tow-lines of the comment of the conversation, it is the same logic
+
+            System.out.println("2. Write a post");
+            //add the post created to datastore and don't forget tagged users(take the usernames and check if there exist or not)
+
+            System.out.println("3. Search for a user");
+            //take the username, ask user if he wants to see posts(read the comment of Browse the main menu)
+            // or add friend(contact with me for more explanation)
+
+            System.out.println("4. See friend's posts");
+            //ask user to choose one of his friend
+
+            System.out.println("5. Browse conversations ");
+            //show conversations he participated in
+            // then asks the user to choose whether he wants to interact with the current conversation,
+            // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
+            // if he chooses to like ask about the id of the message that you already printed its id
+            System.out.println("6. Shared Connections Analysis");
+            //Explanation of the requirement:
+            //8. Display friendship between users using the + operator:
+            //Description:
+            //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
+            //How does this work?:
+            //The lists of posts for each user are compared.
+            //Shared posts are posts that were created by one user and allowed to be seen by the other user.
+            //Shared posts are displayed.
+
+            //9. Display mutual friends using the & operator:
+            //Description:
+            //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
+            //How does this work?:
+            //The list of friends for each user is compared.
+            //Mutual friends are users that appear in both lists.
+            //The list of mutual friends is displayed.
+            System.out.println("7. Log out");
+
+            System.out.print("Enter your choice: ");
+            int action = scanner.nextInt();
+            scanner.nextLine(); // لمعالجة السطر الجديد
+
+        }
+
+}
+
 }
 
 

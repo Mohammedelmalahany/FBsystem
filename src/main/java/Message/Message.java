@@ -19,16 +19,8 @@ public class Message extends Content {
 
     public void setConversationId(int conversationId) {
         this.conversationId = conversationId;
-    // Method to format and display the date and time
-    public String getFormattedTimestamp() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateFormat.format(timestamp);
     }
 
-    public String toString() {
-        return
-                "\n Message From:'" + get.username() + '\'' +
-                        "\n Message:'" + content + '\'' +
-                        "\n Date/time:" + getFormattedTimestamp() + "\nMessageId:" + messageId +' ' ;
-    }
+
+    // Method to format and display the date and time
 }

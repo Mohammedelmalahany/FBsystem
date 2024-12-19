@@ -12,7 +12,7 @@ public class User {
     private String password;
     private String gender;
     private Date birthdate;
-    private List<Integer> friendIds; // قائمة معرفات الأصدقاء
+    private List<Integer> friendIds;
 
     public User(int id, String username, String email, String password, String gender, Date birthdate) {
         this.id = id;
