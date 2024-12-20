@@ -1,6 +1,6 @@
 1,john_doe,john@example.com,secret,male,١٥/٠٤/١٩٩٥
-[FriendIDs]201;202;203;204
+201,true;202,false;203,true;204,false
 
 2,jane_smith,jane@example.com,password,female,٢٢/١١/١٩٩٨
-[FriendIDs]205;206;676;207
+205,true;206,false;676,false;207,false
 
