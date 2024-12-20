@@ -1,10 +1,11 @@
 package User;
+import DataStore.DataStore;
 import Friend.Friend;
 import Post.Post;
 import Conversation.Conversation;
 import java.util.*;
 import UniqueIdGenerator.UniqueIdGenerator;
-import DataStore.DataStore;
+
 public class User {
     private int id;
     private String username;
@@ -87,4 +88,46 @@ public class User {
     }
 
 
+    public List<Post> getCommonPosts(User otherUser) {
+        DataStore dataStore = DataStore.getInstance();
+        List<Post> commonPosts = new ArrayList<>();
+
+        for (Post post : dataStore.getPosts()) {
+            if ((post.getUserId() == this.id || post.getUserId() == otherUser.getId()) &&
+                    (post.getPrivacy().equals("public") ||
+                            (post.getPrivacy().equals("friends") &&
+                                    (this.getFriendUserIds(false).contains(post.getUserId()) || otherUser.getFriendUserIds(false).contains(post.getUserId()))))) {
+                commonPosts.add(post);
+            }
+        }
+
+        return commonPosts;
+    }
+
+    public List<User> getMutualFriends(User otherUser) {
+        DataStore dataStore = DataStore.getInstance();
+        List<User> mutualFriends = new ArrayList<>();
+
+        for (Friend friend1 : this.friends) {
+            if (!friend1.isRestricted()) {
+                for (Friend friend2 : otherUser.getFriends()) {
+                    if (!friend2.isRestricted() && friend1.getUserid() == friend2.getUserid()) {
+                        mutualFriends.add(dataStore.getUserById(friend1.getUserid()));
+                    }
+                }
+            }
+        }
+
+        return mutualFriends;
+    }
+
+    private List<Integer> getFriendUserIds(boolean includeRestricted) {
+        List<Integer> friendUserIds = new ArrayList<>();
+        for (Friend friend : friends) {
+            if (includeRestricted || !friend.isRestricted()) {
+                friendUserIds.add(friend.getUserid());
+            }
+        }
+        return friendUserIds;
+    }
 }
