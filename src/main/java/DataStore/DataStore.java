@@ -142,6 +142,15 @@ public class DataStore {
         return null;
     }
 
+    public Conversation getConversationbyid(int id){
+        for (Conversation conversation : this.getConversations()){
+            if(conversation.getId()==id){
+                return conversation;
+            }
+        }
+        return null;
+    }
+
 }
 
 

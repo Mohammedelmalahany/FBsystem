@@ -1,6 +1,4 @@
 package Friend;
-import java.lang.*;
-import User.User;
 
 public class Friend {
     boolean isRestricted;
@@ -20,7 +18,7 @@ public class Friend {
     }
 
     public boolean isRestricted() {
-        return isRestricted;
+        return !isRestricted;
     }
 
     public void setRestricted(boolean restricted) {

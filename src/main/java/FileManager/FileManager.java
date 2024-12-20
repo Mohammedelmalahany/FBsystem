@@ -139,7 +139,7 @@ public class FileManager {
                 List<Friend> friends = user.getFriends();
                 for (int i = 0; i < friends.size(); i++) {
                     Friend friend = friends.get(i);
-                    sb.append(friend.getUserid()).append(",").append(friend.isRistricted() ? "true" : "false");
+                    sb.append(friend.getUserid()).append(",").append(friend.isRestricted() ? "true" : "false");
                     if (i < friends.size() - 1) {
                         sb.append(";");
                     }

@@ -22,5 +22,6 @@ public class Message extends Content {
     }
 
 
+
     // Method to format and display the date and time
 }

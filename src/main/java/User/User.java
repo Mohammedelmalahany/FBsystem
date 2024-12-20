@@ -5,7 +5,7 @@ import Post.Post;
 import Conversation.Conversation;
 import java.util.*;
 import UniqueIdGenerator.UniqueIdGenerator;
-
+import Message.Message;
 public class User {
     private int id;
     private String username;
@@ -109,9 +109,9 @@ public class User {
         List<User> mutualFriends = new ArrayList<>();
 
         for (Friend friend1 : this.friends) {
-            if (!friend1.isRestricted()) {
+            if (friend1.isRestricted()) {
                 for (Friend friend2 : otherUser.getFriends()) {
-                    if (!friend2.isRestricted() && friend1.getUserid() == friend2.getUserid()) {
+                    if (friend2.isRestricted() && friend1.getUserid() == friend2.getUserid()) {
                         mutualFriends.add(dataStore.getUserById(friend1.getUserid()));
                     }
                 }
@@ -124,10 +124,78 @@ public class User {
     private List<Integer> getFriendUserIds(boolean includeRestricted) {
         List<Integer> friendUserIds = new ArrayList<>();
         for (Friend friend : friends) {
-            if (includeRestricted || !friend.isRestricted()) {
+            if (includeRestricted || friend.isRestricted()) {
                 friendUserIds.add(friend.getUserid());
             }
         }
         return friendUserIds;
     }
+    public void displayUserConversations() {
+        DataStore dataStore = DataStore.getInstance();
+        List<Conversation> conversations = dataStore.getConversations();
+
+        System.out.println("Your Conversations:");
+        boolean hasConversations = false;
+        for (Conversation conversation : conversations) {
+            if (conversation.getUserIds().contains(this.id)) {
+                System.out.println("ID: " + conversation.getId() + " | Name: " + conversation.getConversation_name());
+                hasConversations = true;
+            }
+        }
+
+        if (!hasConversations) {
+            System.out.println("You have no conversations.");
+        }
+        System.out.println("Enter 0 to go back.");
+    }
+    public boolean sendNewMessage(int conversationId, String content) {
+        if (content.equals("0")) {
+            return false; // الرجوع
+        }
+
+        DataStore dataStore = DataStore.getInstance();
+
+        // تحقق من وجود المحادثة
+        Conversation conversation = dataStore.getConversationbyid(conversationId);
+        if (conversation == null) {
+            System.out.println("Conversation not found.");
+            return false;
+        }
+
+        // إنشاء رسالة جديدة
+        Message message = new Message(content, conversationId, this.id);
+        message.setId(); // توليد ID فريد للرسالة
+
+        // إضافة الرسالة إلى DataStore
+        dataStore.addMessage(message);
+
+        System.out.println("Message sent successfully!");
+        return true;
+    }
+    public boolean interactWithMessage(int messageId, boolean isLike) {
+        if (messageId == 0) {
+            return false; // الرجوع
+        }
+
+        DataStore dataStore = DataStore.getInstance();
+        Message message = dataStore.findMessageById(messageId);
+
+        if (message == null) {
+            System.out.println("Message not found. Please try again.");
+            return false;
+        }
+
+        if (isLike) {
+            message.addLike(this.username);
+            System.out.println("You liked the message.");
+        } else {
+            message.addDislike(this.username);
+            System.out.println("You disliked the message.");
+        }
+        return true;
+    }
+
+
+
+
 }

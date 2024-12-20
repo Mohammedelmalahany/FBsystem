@@ -1,6 +1,6 @@
 package ProgDisplay;
+import Conversation.Conversation;
 import User.User;
-import Post.Post;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import DataStore.DataStore;
@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import Post.Post;
 
 public class ProgDisplay {
 
@@ -87,8 +88,8 @@ public class ProgDisplay {
         }
 
 
-        int id = 1;
         User user = new User(email, username, password, gender, birthdate);
+        user.setId();
         dataStore.addUser(user);
         System.out.println("Account created successfully for user: " + username);
         return user;
@@ -155,6 +156,22 @@ public class ProgDisplay {
             // if he chooses to like ask about the id of the message that you already printed its id
 
             System.out.println("6. Shared Connections Analysis");
+            //Explanation of the requirement:
+            //8. Display friendship between users using the + operator:
+            //Description:
+            //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
+            //How does this work?:
+            //The lists of posts for each user are compared.
+            //Shared posts are posts that were created by one user and allowed to be seen by the other user.
+            //Shared posts are displayed.
+
+            //9. Display mutual friends using the & operator:
+            //Description:
+            //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
+            //How does this work?:
+            //The list of friends for each user is compared.
+            //Mutual friends are users that appear in both lists.
+            //The list of mutual friends is displayed.
             System.out.println("7. Log out");
 
             System.out.print("Enter your choice: ");
@@ -164,6 +181,9 @@ public class ProgDisplay {
         }
 
     }
+
+
+
     private static void sharedConnectionsAnalysis(Scanner scanner) {
         DataStore dataStore = DataStore.getInstance();
 
@@ -202,8 +222,113 @@ public class ProgDisplay {
                 System.out.println("Invalid choice! Please try again.");
         }
     }
+    public void manageUserConversations(User user) {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            DataStore dataStore = DataStore.getInstance();
+            user.displayUserConversations();
+
+            System.out.print("Enter the ID of the conversation you want to view (or 0 to exit): ");
+            if (!scanner.hasNextInt()) {
+                System.out.println("Invalid input. Please enter a valid conversation ID.");
+                scanner.nextLine(); // تنظيف الإدخال الخاطئ
+                continue;
+            }
+
+            int conversationId = scanner.nextInt();
+            scanner.nextLine();
+
+            if (conversationId == 0) {
+                System.out.println("Exiting conversations...");
+                break;
+            }
+
+            // تحقق من وجود المحادثة
+            Conversation conversation = dataStore.getConversationbyid(conversationId);
+            if (conversation == null) {
+                System.out.println("Conversation not found. Please enter a valid ID.");
+                continue;
+            }
+
+            // 3. عرض الرسائل داخل المحادثة
+            while (true) {
+                conversation.displayConversationMessages();
+
+                System.out.println("Choose an option:");
+                System.out.println("1. Send a new message");
+                System.out.println("2. Interact with a message");
+                System.out.println("0. Go back");
+
+                if (!scanner.hasNextInt()) {
+                    System.out.println("Invalid input. Please enter a valid option.");
+                    scanner.nextLine();
+                    continue;
+                }
+
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                if (choice == 0) {
+                    break; // الرجوع إلى قائمة المحادثات
+                } else if (choice == 1) {
+                    // إرسال رسالة جديدة
+                    System.out.print("Enter the content of the new message (or 0 to go back): ");
+                    String content = scanner.nextLine();
+                    if (!user.sendNewMessage(conversation.getId(), content)) {
+                        continue; // الرجوع إلى نفس المحادثة
+                    }
+                } else if (choice == 2) {
+                    // التفاعل مع الرسائل
+                    System.out.print("Enter the ID of the message you want to interact with (or 0 to go back): ");
+                    if (!scanner.hasNextInt()) {
+                        System.out.println("Invalid input. Please enter a valid message ID.");
+                        scanner.nextLine();
+                        continue;
+                    }
+
+                    int messageId = scanner.nextInt();
+                    scanner.nextLine();
+
+                    if (messageId == 0) {
+                        continue; // الرجوع إلى نفس المحادثة
+                    }
+
+                    System.out.println("Do you want to like or dislike the message?");
+                    System.out.println("1. Like");
+                    System.out.println("2. Dislike");
+                    System.out.println("0. Go back");
+
+                    if (!scanner.hasNextInt()) {
+                        System.out.println("Invalid input. Please enter a valid option.");
+                        scanner.nextLine();
+                        continue;
+                    }
+
+                    int interactionChoice = scanner.nextInt();
+
+                    if (interactionChoice == 0) {
+                        continue; // الرجوع إلى نفس المحادثة
+                    }
+                    if (interactionChoice != 1 && interactionChoice != 2) {
+                        System.out.println("Invalid choice. Please enter 1 (Like) or 2 (Dislike) or 0 (Go back");
+                        continue;
+                    }
+
+                    boolean isLike = interactionChoice == 1;
+                    if (!user.interactWithMessage(messageId, isLike)) {
+                        continue; // الرجوع إلى نفس المحادثة
+                    }
+                } else {
+                    System.out.println("Invalid choice. Please try again.");
+                }
+            }
+        }
+    }
 
 }
+
+
 
 
 
