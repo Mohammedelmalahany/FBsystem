@@ -1,4 +1,5 @@
 package User;
+import DataStore.DataStore;
 import Friend.Friend;
 import Post.Post;
 import Conversation.Conversation;
@@ -73,4 +74,34 @@ public class User {
     }
 
 
+    public List<Post> getCommonPosts(User otherUser) {
+        DataStore dataStore = DataStore.getInstance();
+        List<Post> commonPosts = new ArrayList<>();
+
+        for (Post post : dataStore.getPosts()) {
+            if ((post.getUserId() == this.id || post.getUserId() == otherUser.getId()) &&
+                    (post.getPrivacy().equals("public") ||
+                            (post.getPrivacy().equals("friends") &&
+                                    (this.friendIds.contains(post.getUserId()) || otherUser.getFriendIds().contains(post.getUserId()))))) {
+                commonPosts.add(post);
+            }
+        }
+
+        return commonPosts;
+    }
+
+    public List<User> getMutualFriends(User otherUser) {
+        DataStore dataStore = DataStore.getInstance();
+        List<User> mutualFriends = new ArrayList<>();
+
+        for (Integer friendId1 : this.friendIds) {
+            for (Integer friendId2 : otherUser.getFriendIds()) {
+                if (friendId1.equals(friendId2)) {
+                    mutualFriends.add(dataStore.getUsers().stream().filter(user -> user.getId() == friendId1).findFirst().orElse(null));
+                }
+            }
+        }
+
+        return mutualFriends;
+    }
 }

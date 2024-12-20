@@ -1,5 +1,6 @@
 package ProgDisplay;
 import User.User;
+import Post.Post;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import DataStore.DataStore;
@@ -153,22 +154,6 @@ public class ProgDisplay {
             // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
             // if he chooses to like ask about the id of the message that you already printed its id
             System.out.println("6. Shared Connections Analysis");
-            //Explanation of the requirement:
-            //8. Display friendship between users using the + operator:
-            //Description:
-            //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
-            //How does this work?:
-            //The lists of posts for each user are compared.
-            //Shared posts are posts that were created by one user and allowed to be seen by the other user.
-            //Shared posts are displayed.
-
-            //9. Display mutual friends using the & operator:
-            //Description:
-            //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
-            //How does this work?:
-            //The list of friends for each user is compared.
-            //Mutual friends are users that appear in both lists.
-            //The list of mutual friends is displayed.
             System.out.println("7. Log out");
 
             System.out.print("Enter your choice: ");
@@ -177,7 +162,45 @@ public class ProgDisplay {
 
         }
 
-}
+    }
+    private static void sharedConnectionsAnalysis(Scanner scanner) {
+        DataStore dataStore = DataStore.getInstance();
+
+        System.out.println("Enter the username of the first user:");
+        String username1 = scanner.nextLine();
+        System.out.println("Enter the username of the second user:");
+        String username2 = scanner.nextLine();
+
+        User user1 = dataStore.findUserByUsername(username1);
+        User user2 = dataStore.findUserByUsername(username2);
+
+        if (user1 == null || user2 == null) {
+            System.out.println("One or both users not found.");
+            return;
+        }
+
+        System.out.println("Press '+' to show common posts or '&' to show mutual friends:");
+        char choice = scanner.nextLine().charAt(0);
+
+        switch (choice) {
+            case '+':
+                List<Post> commonPosts = user1.getCommonPosts(user2);
+                System.out.println("Common posts:");
+                for (Post post : commonPosts) {
+                    System.out.println(post.getContent());
+                }
+                break;
+            case '&':
+                List<User> mutualFriends = user1.getMutualFriends(user2);
+                System.out.println("Mutual friends:");
+                for (User friend : mutualFriends) {
+                    System.out.println(friend.getUsername());
+                }
+                break;
+            default:
+                System.out.println("Invalid choice! Please try again.");
+        }
+    }
 
 }
 
