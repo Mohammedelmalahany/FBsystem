@@ -88,7 +88,7 @@ public class ProgDisplay {
 
 
         int id = 1;
-        User user = new User(id,email, username, password, gender, birthdate);
+        User user = new User(email, username, password, gender, birthdate);
         dataStore.addUser(user);
         System.out.println("Account created successfully for user: " + username);
         return user;

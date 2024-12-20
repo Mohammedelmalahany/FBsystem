@@ -3,12 +3,12 @@ import java.lang.*;
 import User.User;
 
 public class Friend {
-    boolean isRistricted;
+    boolean isRestricted;
     int userid;
 
-    public Friend(int userid,boolean isRistricted){
+    public Friend(int userid,boolean isRestricted){
         this.userid = userid;
-        this.isRistricted = isRistricted;
+        this.isRestricted = isRestricted;
     }
 
     public int getUserid() {
@@ -19,11 +19,11 @@ public class Friend {
         this.userid = userid;
     }
 
-    public boolean isRistricted() {
-        return isRistricted;
+    public boolean isRestricted() {
+        return isRestricted;
     }
 
-    public void setRistricted(boolean ristricted) {
-        isRistricted = ristricted;
+    public void setRestricted(boolean restricted) {
+        isRestricted = restricted;
     }
 }
