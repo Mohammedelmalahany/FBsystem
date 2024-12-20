@@ -55,7 +55,14 @@ public class DataStore {
     public void addUser(User user) {
         users.add(user);
     }
-
+    public User getUserById(int id) {
+        for (User user : users) {
+            if (user.getId() == id) {
+                return user;
+            }
+        }
+        return null;
+    }
     public void addPost(Post post) {
         posts.add(post);
     }

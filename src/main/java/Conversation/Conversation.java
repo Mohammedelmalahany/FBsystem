@@ -1,6 +1,7 @@
 package Conversation;
 
 import Message.Message;
+import UniqueIdGenerator.UniqueIdGenerator;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -12,8 +13,8 @@ public class Conversation {
     private String conversation_name;
 
     // Constructor
-    public Conversation(int id,String conversation_name ) {
-        this.id = id;
+    public Conversation(String conversation_name) {
+
         this.userIds = new ArrayList<>();
         this.conversation_name = conversation_name;
     }
@@ -23,14 +24,22 @@ public class Conversation {
         return id;
     }
 
+    public String getConversation_name(){
+        return conversation_name;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
+    public void setId(){
+        UniqueIdGenerator uniqueIdGenerator = new UniqueIdGenerator(3,1000000);
+        this.id = uniqueIdGenerator.generateUniqueId();
+    }
 
-    // Getter و Setter لقائمة معرّفات المستخدمين
     public List<Integer> getUserIds() {
         return userIds;
     }
+
 
     public void setUserIds(List<Integer> userIds) {
         this.userIds = userIds;

@@ -152,6 +152,7 @@ public class ProgDisplay {
             // then asks the user to choose whether he wants to interact with the current conversation,
             // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
             // if he chooses to like ask about the id of the message that you already printed its id
+
             System.out.println("6. Shared Connections Analysis");
             //Explanation of the requirement:
             //8. Display friendship between users using the + operator:
