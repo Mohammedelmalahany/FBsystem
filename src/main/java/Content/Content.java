@@ -76,5 +76,23 @@ public class Content {
     public int getDislikeCount() {
         return dislikes.size();
     }
+
+    public void viewContnet(String[] showContent){
+        int i = 0;
+        if (showContent.length == 0){
+            //handle case: empty ??
+
+        }
+        else {
+            for (String counter : showContent) {
+                System.out.print(counter + " ");
+                if ((i + 1) % 10 == 0) {
+                    System.out.println();
+                }
+                i++;
+            }
+        }
+    }
+
 }
 

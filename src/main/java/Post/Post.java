@@ -24,9 +24,18 @@ import java.util.*;public class Post extends Content {
         this.privacy = privacy;
     }
 
-
-
-
+    // added by Wajdi, method for showing posts to the user
+    public void showPosts(int currentVal,ArrayList<Post> posts){
+            String postUsername = findUser(posts.get(currentVal).getUserId());
+            String [] showContent = posts.get(currentVal).getContent().split("\\s+");
+            System.out.println(postUsername);
+            // show content
+            viewContnet(showContent);
+            // show reacts number
+            int postLikes = posts.get(currentVal).getLikeCount();
+            int postDislikes = posts.get(currentVal).getDislikeCount();
+            System.out.print("Likes: "+postLikes+"\t\t\t\tDislikes: "+postDislikes);
+    }
 
 
 }

@@ -2,17 +2,18 @@ package User;
 import Friend.Friend;
 import Post.Post;
 import Conversation.Conversation;
+import DataStore.DataStore;
 import java.util.*;
 
 
 public class User {
-    private int id;
-    private String username;
-    private String email;
-    private String password;
+    private final int id;
+    private final String username;
+    private final String email;
+    private final String password;
     private String gender;
     private Date birthdate;
-    private List<Integer> friendIds;
+    private final List<Integer> friendIds;
 
     public User(int id, String username, String email, String password, String gender, Date birthdate) {
         this.id = id;
@@ -72,5 +73,16 @@ public class User {
         }
     }
 
+    // "added by Wajdi" method for getting the username of the post creator
+    public String findUser(int userId){
+        List<User> usernames = DataStore.getInstance().getUsers();
+        for(User counter : usernames){
+            if (userId == counter.id){
+                return counter.username;
+            }
+        }
+        // NOT handled case: if id doesn't exist
+        return "";
+    }
 
 }

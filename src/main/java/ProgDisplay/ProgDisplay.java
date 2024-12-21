@@ -1,5 +1,8 @@
 package ProgDisplay;
 import User.User;
+import Post.Post;
+import Comment.Comment;
+import DataStore.DataStore;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import DataStore.DataStore;
@@ -130,54 +133,244 @@ public class ProgDisplay {
         while (true) {
             System.out.println("\n--- User Actions ---");
             System.out.println("1. Browse the main menu");
-            //show posts according to the privacy level then
-            // To make the user interact with posts after they are shown to him,
-            // we can create a function that displays posts one by one,
-            // and then asks the user to choose whether he wants to interact with the current post (write a comment, like, etc.).
-            // We'll add a mechanism that allows them to choose between "Engage", "Skip to next post", or "Exit".
-            //after engage read the last tow-lines of the comment of the conversation, it is the same logic
+            // if user choose 1. Browse the main menu
+            if (input == 1){
+                List<Post> posts = DataStore.getInstance().getPosts();
+                int currentVal = posts.size() - 1;
 
-            System.out.println("2. Write a post");
-            //add the post created to datastore and don't forget tagged users(take the usernames and check if there exist or not)
+                // user is the object of the current user in the run
+                int activeUserId = user.getId();
+                String activeUsername = user.getUsername();
 
-            System.out.println("3. Search for a user");
-            //take the username, ask user if he wants to see posts(read the comment of Browse the main menu)
-            // or add friend(contact with me for more explanation)
+                int input;
+                int commentId;
+                int id;
+                boolean validId;
+                ArrayList<Comment> comments;
+                while (true) {
+                    //check what posts to show
+                    /*int id = user.getId();
+                    boolean friend = checkFriend(postUserId, userId);
+                    boolean restrection = checkRestricted();
+                    posts.get(currentVal).getPrivacy();
+                    if (() && (friend != true || restrection == true)){
+                        //if current post is actually the last
+                        // you can show the options before the posts
+                        // you can repeat the process of input 2
+                        //you can show alternative
+                        if(currentVal == 0){
 
-            System.out.println("4. See friend's posts");
-            //ask user to choose one of his friend
+                        }
+                        currentVal--;
+                        continue;
+                    }*/
 
-            System.out.println("5. Browse conversations ");
-            //show conversations he participated in
-            // then asks the user to choose whether he wants to interact with the current conversation,
-            // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
-            // if he chooses to like ask about the id of the message that you already printed its id
-            System.out.println("6. Shared Connections Analysis");
-            //Explanation of the requirement:
-            //8. Display friendship between users using the + operator:
-            //Description:
-            //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
-            //How does this work?:
-            //The lists of posts for each user are compared.
-            //Shared posts are posts that were created by one user and allowed to be seen by the other user.
-            //Shared posts are displayed.
+                    // method that shows username and content and reacts
+                    // order is from new to old
+                    showPosts(currentVal, posts);
+                    id = posts.get(currentVal).getId();
+                    System.out.println("1. Enter post");
 
-            //9. Display mutual friends using the & operator:
-            //Description:
-            //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
-            //How does this work?:
-            //The list of friends for each user is compared.
-            //Mutual friends are users that appear in both lists.
-            //The list of mutual friends is displayed.
-            System.out.println("7. Log out");
+                    // show option 2 only if the post isn't the last on the list
+                    if (currentVal != 0) {
+                        System.out.println("2. Next post");
+                    }
+                    // show option 3 only if the post isn't the first on the list
+                    if (currentVal != posts.size() - 1) {
+                        System.out.println("3. previous post");
+                    }
+                    System.out.println("0. Exist");
 
-            System.out.print("Enter your choice: ");
-            int action = scanner.nextInt();
-            scanner.nextLine(); // لمعالجة السطر الجديد
+                    input = scanner.nextInt();
 
+                    if (input == 2) {
+                        // don't allow the user to enter 2 when the post is last
+                        if (currentVal == 0) {
+                            System.out.println("INVALID CHOICE");
+                            continue;
+                        }
+                        //Next post
+                        currentVal--;
+
+                    } else if (input == 3) {
+                        // don't allow the user to enter 3 when the post is first
+                        if (currentVal == posts.size() - 1) {
+                            System.out.println("INVALID CHOICE");
+                            continue;
+                        }
+                        //Previous post
+                        currentVal++;
+
+                    }
+                    else if (input == 1) {
+                        while (true) {
+                            // show all comments and replies
+                            comments = showComments(id);
+                            System.out.println("1. Write a comment");
+                            System.out.println("2. Like the post");
+                            System.out.println("3. Dislike the post");
+
+                            if(!comments.isEmpty()){
+                                System.out.println("4. Replay");
+                                System.out.println("5. Like a comment");
+                                System.out.println("6. dislike a comment");
+                            }
+
+                            System.out.println("0. Exist");
+
+                            input = scanner.nextInt();
+                            if (input == 1) {
+                                // Write a comment
+                                //method for adding content
+                                String commentContent = scanner.nextLine();
+                                Comment usesrComment = new Comment(commentContent, id, activeUserId, null);
+                                // add comment to the list
+                                getInstance.addComment(usesrComment);
+                                System.out.println("You commented on this post");
+                            }
+                            else if (input == 4) {
+                                // check validation
+                                if(comments.isEmpty()){
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+                                // add replay;
+                                System.out.println("Enter comment id: ");
+                                commentId = scanner.nextInt();
+                                // check validation
+                                validId = checkId(commentId, comments);
+                                if (validId) {
+                                    System.out.println("Enter your replay");
+                                    String replayContent = scanner.nextLine();
+                                    Comment userReplay = new Comment(replayContent, id, activeUserId, commentId);
+                                    getInstance.addComment(usesrReplay);
+                                    System.out.println("You replied on this comment");
+                                }
+                                else {
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+                            }
+                            else if(input == 2){
+                                posts.get(currentVal).addLike(activeUsername);
+                                System.out.println("Liked");
+                                }
+                            else if(input == 3){
+                                posts.get(currentVal).addDislike(activeUsername);
+                                System.out.println("Disliked");
+                                }
+
+                            else if (input == 5) {
+                                // check validation
+
+                                if(comments.isEmpty()){
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+
+                                // add like
+                                System.out.println("Enter comment id: ");
+                                commentId = scanner.nextInt();
+                                //check if id is valid
+                                validId = checkId(commentId, comments);
+                                if (validId) {
+                                    // addlike method
+
+
+
+
+
+
+                                } else {
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+                            } else if (input == 6) {
+                                // check validation
+
+                                if(comments.isEmpty()){
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+
+                                // add dislike
+                                System.out.println("Enter comment id: ");
+                                commentId = scanner.nextInt();
+                                //check if id is valid
+                                validId = checkId(commentId, comments);
+                                if (validId) {
+                                    // add dislike method
+
+
+
+
+
+                                } else {
+                                    System.out.println("INVALID INPUT");
+                                    continue;
+                                }
+                            }
+
+                            else if (input == 0) {
+                                break;
+                            }
+
+                            else {
+                                System.out.println("INVALID INPUT");
+                                continue;
+                            }
+                        }
+                    } else if (input == 0) {
+                        break;
+
+                    } else {
+                        System.out.println("INVALID CHOICE");
+                        continue;
+                    }
+                }
+            }
+
+
+        System.out.println("2. Write a post");
+        //add the post created to datastore and don't forget tagged users(take the usernames and check if there exist or not)
+
+        System.out.println("3. Search for a user");
+        //take the username, ask user if he wants to see posts(read the comment of Browse the main menu)
+        // or add friend(contact with me for more explanation)
+
+        System.out.println("4. See friend's posts");
+        //ask user to choose one of his friend
+
+        System.out.println("5. Browse conversations ");
+        //show conversations he participated in
+        // then asks the user to choose whether he wants to interact with the current conversation,
+        // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
+        // if he chooses to like ask about the id of the message that you already printed its id
+        System.out.println("6. Shared Connections Analysis");
+        //Explanation of the requirement:
+        //8. Display friendship between users using the + operator:
+        //Description:
+        //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
+        //How does this work?:
+        //The lists of posts for each user are compared.
+        //Shared posts are posts that were created by one user and allowed to be seen by the other user.
+        //Shared posts are displayed.
+
+        //9. Display mutual friends using the & operator:
+        //Description:
+        //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
+        //How does this work?:
+        //The list of friends for each user is compared.
+        //Mutual friends are users that appear in both lists.
+        //The list of mutual friends is displayed.
+        System.out.println("7. Log out");
+
+        System.out.print("Enter your choice: ");
+        int action = scanner.nextInt();
+        scanner.nextLine(); // لمعالجة السطر الجديد
         }
 
-}
+    }
 
 }
 
