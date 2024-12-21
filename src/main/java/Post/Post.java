@@ -9,8 +9,8 @@ import java.util.*;public class Post extends Content {
     List<String>usernames;
 
 
-    public Post(int id, String content, String privacy, int userId) {
-        super(id, content,userId);
+    public Post( String content, String privacy, int userId) {
+        super( content,userId);
         this.privacy = privacy;
         usernames = new ArrayList<>();
 

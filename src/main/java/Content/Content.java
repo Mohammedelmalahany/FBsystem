@@ -1,6 +1,7 @@
 package Content;
 import User.User;
 import java.util.*;
+import UniqueIdGenerator.UniqueIdGenerator;
 public class Content {
     private int id;
     private int userId;
@@ -8,8 +9,7 @@ public class Content {
     private List<String> likes;
     private List<String> dislikes;
 
-    public Content(int id, String content,int userId) {
-        this.id = id;
+    public Content( String content,int userId) {
         this.userId = userId;
         this.content = content;
         this.likes = new ArrayList<>();
@@ -28,6 +28,10 @@ public class Content {
         this.userId = userId;
     }
 
+    public void setId(){
+        UniqueIdGenerator uniqueIdGenerator = new UniqueIdGenerator(3,1000000);
+        this.id = uniqueIdGenerator.generateUniqueId();
+    }
     public void setId(int id) {
         this.id = id;
     }

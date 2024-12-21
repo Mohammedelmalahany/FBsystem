@@ -13,6 +13,7 @@ import Comment.Comment;
 import Message.Message;
 import java.io.*;
 import java.util.*;
+import Friend.Friend;
 
 @SuppressWarnings("ALL")
 public class FileManager {
@@ -28,7 +29,7 @@ public class FileManager {
     public void readDataFromFile() {
         DataStore dataStore = DataStore.getInstance();
 
-        readusers(dataStore);
+        readUsers();
 
         readPosts(dataStore);
 
@@ -61,10 +62,13 @@ public class FileManager {
 
     }
 
-    private void readusers(DataStore dataStore) {
+    public void readUsers() {
+        DataStore dataStore = DataStore.getInstance();
+
         try {
             String content = Files.readString(Path.of(USERS_FILE));
             String[] blocks = content.split("\\r?\\n\\r?\\n");
+
             for (String block : blocks) {
                 processUserBlock(block.trim(), dataStore);
             }
@@ -72,12 +76,11 @@ public class FileManager {
             e.printStackTrace();
         }
     }
+
     private void processUserBlock(String block, DataStore dataStore) {
         String[] lines = block.split("\\r?\\n");
 
-        String[] basicInfo;
-        basicInfo = lines[0].split(",");
-
+        String[] basicInfo = lines[0].split(",");
 
         int id = Integer.parseInt(basicInfo[0]);
         String username = basicInfo[1];
@@ -92,34 +95,30 @@ public class FileManager {
             e.printStackTrace();
         }
 
-        User user = new User(id, username, email, password, gender, birthdate);
+        User user = new User(username, email, password, gender, birthdate);
+        user.setId(id);
 
-        StringBuilder friendIdsBuilder = new StringBuilder();
-        for (int i = 1; i < lines.length; i++) {
-            String line = lines[i].trim();
+        // قراءة بيانات الأصدقاء من السطر الثاني
+        if (lines.length > 1) {
+            String friendData = lines[1].trim(); // بيانات الأصدقاء
+            String[] friendEntries = friendData.split(";");
 
-            if (line.startsWith("[FriendIDs]")) {
-                friendIdsBuilder.append(line.substring(11).trim());
-            } else if (friendIdsBuilder.length() > 0) {
-
-                friendIdsBuilder.append(line.trim());
-            }
-        }
-
-
-        if (friendIdsBuilder.length() > 0) {
-            String[] friendIds = friendIdsBuilder.toString().split(";");
-            for (String friendId : friendIds) {
+            for (String entry : friendEntries) {
+                String[] parts = entry.split(",");
                 try {
-                    user.addFriendId(Integer.parseInt(friendId.trim()));
-                } catch (NumberFormatException e) {
-                    System.out.println("خطأ في تحويل معرف الصديق: " + friendId);
+                    int friendId = Integer.parseInt(parts[0].trim());
+                    boolean isRestricted = Boolean.parseBoolean(parts[1].trim());
+                    user.addFriend(friendId, isRestricted); // تعديل لإضافة الصديق مع حالة "Restricted"
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    System.out.println("خطأ في تحليل بيانات الصديق: " + entry);
                 }
             }
         }
 
         dataStore.addUser(user);
     }
+
+    // كتابة المستخدمين إلى الملف
     public void writeUsers() {
         DataStore dataStore = DataStore.getInstance();
 
@@ -128,7 +127,7 @@ public class FileManager {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
             for (User user : dataStore.getUsers()) {
-
+                // كتابة البيانات الأساسية للمستخدم
                 sb.append(user.getId()).append(",")
                         .append(user.getUsername()).append(",")
                         .append(user.getEmail()).append(",")
@@ -136,21 +135,21 @@ public class FileManager {
                         .append(user.getGender()).append(",")
                         .append(dateFormat.format(user.getBirthdate())).append("\n");
 
-
-                sb.append("[FriendIDs]");
-
-                List<Integer> friendIds = user.getFriendIds();
-                for (int i = 0; i < friendIds.size(); i++) {
-                    sb.append(friendIds.get(i));
-                    if (i < friendIds.size() - 1) {
+                // كتابة بيانات الأصدقاء
+                List<Friend> friends = user.getFriends();
+                for (int i = 0; i < friends.size(); i++) {
+                    Friend friend = friends.get(i);
+                    sb.append(friend.getUserid()).append(",").append(friend.isRestricted() ? "true" : "false");
+                    if (i < friends.size() - 1) {
                         sb.append(";");
                     }
                 }
 
-                sb.append("\n\n");
+                sb.append("\n\n"); // إضافة فاصلات جديدة للفصل بين المستخدمين
             }
 
-            Files.writeString(Path.of(USERS_FILE), sb.toString());
+            // كتابة النص النهائي إلى الملف
+            Files.writeString(Path.of("users.txt"), sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -189,7 +188,8 @@ public class FileManager {
         String content = contentBuilder.toString().trim();
 
 
-        Post post = new Post(postId,content,privacy,userId);
+        Post post = new Post(content,privacy,userId);
+        post.setId(postId);
         dataStore.addPost(post);
     }
     private void writePosts() {
@@ -246,7 +246,8 @@ public class FileManager {
 
         String content = contentBuilder.toString();
 
-        Comment comment = new Comment(commentId, content, postId, userId, parentCommentId);
+        Comment comment = new Comment( content, postId, userId, parentCommentId);
+        comment.setId();
         dataStore.addComment(comment);
     }
     private void writeComments() {
@@ -287,18 +288,12 @@ public class FileManager {
     private void processConversationBlock(String block, DataStore dataStore) {
         String[] lines = block.split("\\r?\\n");
 
-        // التحقق من أن السطر الأول غير فارغ
-        String firstLine = lines[0].trim();
-        if (firstLine.isEmpty()) {
-            System.out.println("خطأ: معرّف المحادثة فارغ في السطر الأول.");
-            return;  // إيقاف المعالجة إذا كان السطر الأول فارغًا
-        }
+        String[] basicInfo = lines[0].split(",");
+        int conversationId  = Integer.parseInt(basicInfo[0]);
+        String convname = basicInfo[1];
 
-        // قراءة معرّف المحادثة من السطر الأول
-        int conversationId = Integer.parseInt(firstLine);
-
-        // إنشاء كائن Conversation
-        Conversation conversation = new Conversation(conversationId,"name");
+        Conversation conversation = new Conversation(convname);
+        conversation.setId(conversationId);
 
         // بناء المحتوى بعد السطر الأول
         StringBuilder contentBuilder = new StringBuilder();
@@ -316,7 +311,7 @@ public class FileManager {
             content = content.substring(0, content.length() - 1);
         }
 
-        // تقسيم المعرفات بناءً على الفواصل
+        // تقسيم ids بناءً على الفواصل
         List<Integer> userIds = new ArrayList<>();
         String[] userIdsArray = content.split(",");
 
@@ -327,7 +322,7 @@ public class FileManager {
             }
         }
 
-        // إضافة معرّفات المستخدمين إلى المحادثة
+        // إضافة ids المستخدمين إلى المحادثة
         conversation.setUserIds(userIds);
 
         // إضافة المحادثة إلى DataStore
@@ -340,7 +335,8 @@ public class FileManager {
             StringBuilder sb = new StringBuilder();
 
             for (Conversation conversation : dataStore.getConversations()) {
-                sb.append(conversation.getId()).append("\n");
+                sb.append(conversation.getId()).append(",")
+                        .append(conversation.getConversation_name()).append("\n");
 
                 List<Integer> userIds = conversation.getUserIds();
                 StringBuilder userIdsLine = new StringBuilder();
@@ -392,7 +388,8 @@ public class FileManager {
 
         String content = contentBuilder.toString();
 
-        Message message = new Message(messageId,content,conversationId,userId);
+        Message message = new Message(content,conversationId,userId);
+        message.setId();
         dataStore.addMessage(message);
     }
     private void writemessage() {

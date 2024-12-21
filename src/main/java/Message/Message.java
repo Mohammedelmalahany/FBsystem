@@ -8,8 +8,8 @@ import java.util.Date;
 public class Message extends Content {
     private int conversationId;
 
-    public Message(int id, String content, int conversationId, int userid) {
-        super(id, content,userid);
+    public Message(String content, int conversationId, int userid) {
+        super( content,userid);
         this.conversationId = conversationId;
     }
 
@@ -20,6 +20,7 @@ public class Message extends Content {
     public void setConversationId(int conversationId) {
         this.conversationId = conversationId;
     }
+
 
 
     // Method to format and display the date and time
