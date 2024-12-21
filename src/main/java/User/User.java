@@ -15,6 +15,7 @@ public class User {
     private Date birthdate;
     private List<Friend> friends;
     private List<Integer> taggedPosts; // قائمة المنشورات المميزة
+    private List<String> friendRequests; // قائمة طلبات الصداقة
 
     public User( String username, String email, String password, String gender, Date birthdate) {
         this.username = username;
@@ -24,6 +25,7 @@ public class User {
         this.birthdate = birthdate;
         this.friends = new ArrayList<>();
         this.taggedPosts = new ArrayList<>(); // تهيئة القائمة
+        this.friendRequests = new ArrayList<>(); // تهيئة قائمة طلبات الصداقة
 
     }
 
@@ -89,7 +91,36 @@ public class User {
         friends.add(friend);
 
     }
+    public List<String> getFriendRequests() {
+        return friendRequests;
+    }
 
+    public void addFriendRequest(String username) {
+        if (!friendRequests.contains(username)) {
+            friendRequests.add(username);
+        }
+    }
+
+    public void removeFriendRequest(String username) {
+        friendRequests.remove(username);
+    }
+
+    public boolean acceptFriendRequest(String username, boolean restricted) {
+        DataStore dataStore = DataStore.getInstance();
+        User sender = dataStore.findUserByUsername(username);
+
+        if (sender != null) {
+            this.addFriend(sender.getId(), restricted);
+            sender.addFriend(this.id, restricted);
+            this.removeFriendRequest(username);
+            return true;
+        }
+        return false;
+    }
+
+    public void declineFriendRequest(String username) {
+        this.removeFriendRequest(username);
+    }
 
     public List<Post> getCommonPosts(User otherUser) {
         DataStore dataStore = DataStore.getInstance();
@@ -124,7 +155,7 @@ public class User {
         return mutualFriends;
     }
 
-    private List<Integer> getFriendUserIds(boolean includeRestricted) {
+    public List<Integer> getFriendUserIds(boolean includeRestricted) {
         List<Integer> friendUserIds = new ArrayList<>();
         for (Friend friend : friends) {
             if (includeRestricted || friend.isRestricted()) {
@@ -133,6 +164,86 @@ public class User {
         }
         return friendUserIds;
     }
+    public void sendFriendRequest(Scanner scanner, User foundUser) {
+        if (foundUser.getFriendRequests().contains(this.getUsername())) {
+            System.out.println("Friend request already sent to " + foundUser.getUsername() + ".");
+            return;
+        }
+
+        foundUser.addFriendRequest(this.getUsername());
+        System.out.println("Friend request sent to " + foundUser.getUsername() + ".");
+    }
+    public void viewFriendRequests(Scanner scanner) {
+        List<String> friendRequests = this.getFriendRequests();
+
+        if (friendRequests.isEmpty()) {
+            System.out.println("You have no pending friend requests.");
+            return;
+        }
+
+        System.out.println("\nPending friend requests:");
+        for (int i = 0; i < friendRequests.size(); i++) {
+            System.out.println((i + 1) + ". " + friendRequests.get(i));
+        }
+
+        while (true) {
+            System.out.print("Enter the number of the request to process (or 0 to go back): ");
+            String input = scanner.nextLine().trim();
+
+            if (!input.matches("\\d+")) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                continue;
+            }
+
+            int choice = Integer.parseInt(input);
+
+            if (choice == 0) {
+                return; // الرجوع إلى القائمة السابقة
+            }
+
+            if (choice < 1 || choice > friendRequests.size()) {
+                System.out.println("Invalid choice. Please try again.");
+                continue;
+            }
+
+            String requesterUsername = friendRequests.get(choice - 1);
+            processFriendRequest(scanner, requesterUsername);
+            break;
+        }
+    }
+    public void processFriendRequest(Scanner scanner, String requesterUsername) {
+        while (true) {
+            System.out.print("Would you like to accept this friend request? (1 for yes, 2 for no, 0 to go back): ");
+            String input = scanner.nextLine().trim();
+
+            switch (input) {
+                case "0" -> {
+                    return; // الرجوع إلى قائمة الطلبات
+                }
+                case "1" -> {
+                    System.out.print("Would you like to make this friend restricted? (1 for yes, 0 for no): ");
+                    int restrictedInput = getValidBinaryInput(scanner);
+                    boolean restricted = restrictedInput == 1;
+
+                    boolean accepted = this.acceptFriendRequest(requesterUsername, restricted);
+
+                    if (accepted) {
+                        System.out.println("You are now friends with " + requesterUsername + ".");
+                    } else {
+                        System.out.println("Failed to accept the friend request.");
+                    }
+                    return;
+                }
+                case "2" -> {
+                    this.declineFriendRequest(requesterUsername);
+                    System.out.println("Friend request from " + requesterUsername + " declined.");
+                    return;
+                }
+                default -> System.out.println("Invalid input. Please try again.");
+            }
+        }
+    }
+
     public void displayUserConversations() {
         DataStore dataStore = DataStore.getInstance();
         List<Conversation> conversations = dataStore.getConversations();
@@ -204,6 +315,18 @@ public class User {
     public void addTaggedPost(int postId) {
         if (!taggedPosts.contains(postId)) {
             taggedPosts.add(postId);
+        }
+    }
+
+    private static int getValidBinaryInput(Scanner scanner) {
+        while (true) {
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("1") || input.equals("0")) {
+                return Integer.parseInt(input);
+            } else {
+                System.out.print("Invalid input. Please enter 1 for yes or 0 for no: ");
+            }
         }
     }
 

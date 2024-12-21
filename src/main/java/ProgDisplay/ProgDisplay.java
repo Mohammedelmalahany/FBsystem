@@ -209,7 +209,7 @@ public class ProgDisplay {
         }
     }
 
-    private static void userActions(Scanner scanner) {
+    private static void userActions(Scanner scanner, User user) {
         while (true) {
             System.out.println("\n--- User Actions ---");
             System.out.println("1. Browse the main menu");
@@ -254,15 +254,25 @@ public class ProgDisplay {
             //Mutual friends are users that appear in both lists.
             //The list of mutual friends is displayed.
             System.out.println("7. Log out");
-
-            System.out.print("Enter your choice: ");
-            int action = scanner.nextInt();
-            scanner.nextLine(); // لمعالجة السطر الجديد
+            logout();
+            return;
 
         }
 
     }
 
+    private static void logout() {
+        clearConsole();
+        System.out.println("You have successfully logged out.");
+        System.out.println("Returning to the main menu...");
+    }
+    private static void clearConsole() {
+        try {
+            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+        } catch (Exception ex) {
+            System.out.println("Unable to clear console.");
+        }
+    }
 
 
     private static void sharedConnectionsAnalysis(Scanner scanner) {
@@ -616,6 +626,88 @@ public class ProgDisplay {
             }
         }
     }
+
+    private void searchForUser(Scanner scanner, User currentUser, DataStore dataStore) {
+        while (true) {
+            System.out.print("Enter the username of the user you want to search for (or 0 to go back): ");
+            String searchUsername = scanner.nextLine().trim();
+
+            if (searchUsername.equals("0")) {
+                System.out.println("Returning to the previous menu...");
+                return;
+            }
+
+            User foundUser = dataStore.findUserByUsername(searchUsername);
+
+            if (foundUser == null) {
+                System.out.println("User not found. Please try again.");
+                continue;
+            }
+
+            System.out.println("User found: " + foundUser.getUsername());
+
+            List<Post> posts = dataStore.getPostsByUserId(foundUser.getId());
+            boolean isFriend = currentUser.getFriendUserIds(false).contains(foundUser.getId());
+            boolean isRestricted = currentUser.getFriendUserIds(true).contains(foundUser.getId());
+
+            System.out.println("\nPosts by " + foundUser.getUsername() + ":");
+            boolean hasPosts = false;
+            for (Post post : posts) {
+                if (post.getPrivacy().equals("public") ||
+                        (post.getPrivacy().equals("friends") && isFriend && !isRestricted)) {
+                    System.out.println("Post ID: " + post.getId());
+                    System.out.println("Content: " + post.getContent());
+                    System.out.println("---------------");
+                    hasPosts = true;
+                }
+            }
+
+            if (!hasPosts) {
+                System.out.println("No visible posts available.");
+            }
+
+            while (true) {
+                System.out.println("1. Send friend request");
+                System.out.println("2. Search for another user");
+                System.out.println("0. Go back");
+                System.out.print("Your choice: ");
+
+                String input = scanner.nextLine().trim();
+
+                switch (input) {
+                    case "1" -> {
+                     currentUser.sendFriendRequest(scanner, foundUser);
+                    }
+                    case "2" -> {
+                        break;
+                    }
+                    case "0" -> {
+                        System.out.println("Returning to the previous menu...");
+                        return;
+                    }
+                    default -> System.out.println("Invalid choice. Please try again.");
+                }
+            }
+        }
+    }
+
+    private static int getValidBinaryInput(Scanner scanner) {
+        while (true) {
+            String input = scanner.nextLine().trim();
+
+            if (input.equals("1") || input.equals("0")) {
+                return Integer.parseInt(input);
+            } else {
+                System.out.print("Invalid input. Please enter 1 for yes or 0 for no: ");
+            }
+        }
+    }
+
+
+
+
+
+
 
 
 }
