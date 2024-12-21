@@ -16,113 +16,196 @@ public class ProgDisplay {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("Welcome to Facebook System");
+            System.out.println("\nWelcome to Facebook System");
             System.out.println("Please choose an option:");
             System.out.println("1. Register an account");
             System.out.println("2. Log in to your account");
             System.out.println("3. Exit");
             System.out.print("Your choice: ");
 
-            int choice = scanner.nextInt();
+            if (!scanner.hasNextInt()) {
+                System.out.println("Invalid input. Please enter a number between 1 and 3.");
+                scanner.nextLine();
+                continue;
+            }
 
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
-                    User registereduser = registerAccount(dataStore);
-                    if (registereduser != null) {
-                        System.out.println("Welcome, " + registereduser.getUsername() + "! You are now registered.");
+                    User registeredUser = registerAccount(dataStore);
+                    if (registeredUser != null) {
+                        System.out.println("Welcome, " + registeredUser.getUsername() + "! You are now registered.");
                         return;
                     }
                     break;
-                case 2:
+
+                case 2: // تسجيل الدخول
                     User loggedInUser = login(dataStore.getUsers());
                     if (loggedInUser != null) {
                         System.out.println("Welcome, " + loggedInUser.getUsername() + "! You are now logged in.");
-                        return;
+                        return; // إنهاء الشاشة والانتقال إلى المرحلة التالية
                     }
                     break;
-                case 3:
+
+                case 3: // الخروج من النظام
                     System.out.println("Exiting the program. Goodbye!");
                     return;
+
                 default:
-                    System.out.println("Invalid choice! Please try again.");
+                    System.out.println("Invalid choice! Please enter a number between 1 and 3.");
             }
         }
     }
 
     public User registerAccount(DataStore dataStore) {
         Scanner scanner = new Scanner(System.in);
-
-        System.out.println("You chose to register an account.");
-        System.out.println("Please, Enter username:");
-        String username = scanner.nextLine();
-
-
-
-        System.out.println("Please, Enter email:");
-        String email = scanner.nextLine();
-
-        System.out.println("Please, Enter password:");
-        String password = scanner.nextLine();
-
-        System.out.println("Please, Enter gender:");
-        String gender = scanner.nextLine();
-
-        System.out.println("Please, Enter birthdate (format: dd/MM/yyyy):");
+        String username = "";
+        String email = "";
+        String password = "";
+        String gender = "";
         Date birthdate = null;
-        boolean validDate = false;
 
-        while (!validDate) {
-            String birthdateInput = scanner.nextLine();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-            dateFormat.setLenient(false);
+        int currentStep = 1;
 
-            try {
-                birthdate = dateFormat.parse(birthdateInput);
-                validDate = true;
-            } catch (ParseException e) {
-                System.out.println("Invalid date format! Please, enter the birthdate again (format: dd/MM/yyyy):");
+        while (true) {
+            switch (currentStep) {
+                case 1: // إدخال اسم المستخدم
+                    System.out.print("Enter a unique username (or 0 to go back): ");
+                    username = scanner.nextLine();
+                    if (username.equals("0")) {
+                        System.out.println("No previous step. Exiting registration...");
+                        return null;
+                    }
+                    if (dataStore.findUserByUsername(username) != null) {
+                        System.out.println("Username is already taken. Please choose another one.");
+                    } else if (!username.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Username cannot be empty.");
+                    }
+                    break;
+
+                case 2: // إدخال البريد الإلكتروني
+                    System.out.print("Enter email (or 0 to go back): ");
+                    email = scanner.nextLine();
+                    if (email.equals("0")) {
+                        currentStep--;
+                    } else if (!email.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Email cannot be empty.");
+                    }
+                    break;
+
+                case 3: // إدخال كلمة المرور
+                    System.out.print("Enter password (or 0 to go back): ");
+                    password = scanner.nextLine();
+                    if (password.equals("0")) {
+                        currentStep--;
+                    } else if (!password.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Password cannot be empty.");
+                    }
+                    break;
+
+                case 4: // إدخال النوع
+                    System.out.print("Enter gender (or 0 to go back): ");
+                    gender = scanner.nextLine();
+                    if (gender.equals("0")) {
+                        currentStep--;
+                    } else if (!gender.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Gender cannot be empty.");
+                    }
+                    break;
+
+                case 5: // إدخال تاريخ الميلاد
+                    System.out.print("Enter birthdate (format: dd/MM/yyyy) or 0 to go back: ");
+                    String birthdateInput = scanner.nextLine();
+                    if (birthdateInput.equals("0")) {
+                        currentStep--;
+                    } else {
+                        try {
+                            birthdate = new SimpleDateFormat("dd/MM/yyyy").parse(birthdateInput);
+                            currentStep++;
+                        } catch (ParseException e) {
+                            System.out.println("Invalid date format. Please try again.");
+                        }
+                    }
+                    break;
+
+                case 6: // إنشاء الحساب
+                    User user = new User(username, email, password, gender, birthdate);
+                    user.setId();
+                    dataStore.addUser(user);
+                    System.out.println("Account created successfully for user: " + username);
+                    return user;
             }
         }
-
-
-        User user = new User(email, username, password, gender, birthdate);
-        user.setId();
-        dataStore.addUser(user);
-        System.out.println("Account created successfully for user: " + username);
-        return user;
     }
 
     public User login(List<User> users) {
         Scanner scanner = new Scanner(System.in);
+        String username = "";
+        String password = "";
 
-        System.out.println("You chose to log in.");
-        System.out.println("Please, Enter your email:");
-        String email = scanner.nextLine();
+        int currentStep = 1;
 
-        System.out.println("Please, Enter your password:");
-        String password = scanner.nextLine();
+        while (true) {
+            switch (currentStep) {
+                case 1: // إدخال اسم المستخدم
+                    System.out.print("Enter your username (or 0 to go back): ");
+                    username = scanner.nextLine();
+                    if (username.equals("0")) {
+                        System.out.println("Returning to the main menu...");
+                        return null;
+                    }
+                    if (!username.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Username cannot be empty.");
+                    }
+                    break;
 
-        for (User user : users) {
-            if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
-                System.out.println("Login successful! Welcome, " + user.getUsername() + "!");
-                return user;
+                case 2: // إدخال كلمة المرور
+                    System.out.print("Enter your password (or 0 to go back): ");
+                    password = scanner.nextLine();
+                    if (password.equals("0")) {
+                        currentStep--;
+                    } else if (!password.isEmpty()) {
+                        currentStep++;
+                    } else {
+                        System.out.println("Password cannot be empty.");
+                    }
+                    break;
+
+                case 3: // التحقق من بيانات الدخول
+                    for (User user : users) {
+                        if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                            System.out.println("Login successful! Welcome, " + user.getUsername() + "!");
+                            return user;
+                        }
+                    }
+                    System.out.println("Invalid username or password.");
+                    System.out.println("1. Try again");
+                    System.out.println("2. Return to the main menu");
+                    System.out.print("Your choice: ");
+
+                    int retryChoice = scanner.nextInt();
+                    scanner.nextLine(); // تنظيف الإدخال
+
+                    if (retryChoice == 1) {
+                        currentStep = 1;
+                    } else {
+                        System.out.println("Returning to the main menu...");
+                        return null;
+                    }
+                    break;
             }
-        }
-
-        System.out.println("Invalid email or password.");
-        System.out.println("1. Try again");
-        System.out.println("2. Return to the main menu");
-        System.out.print("Your choice: ");
-
-        int retryChoice = scanner.nextInt();
-        scanner.nextLine();
-
-        if (retryChoice == 1) {
-            return login(users);
-        } else {
-            System.out.println("Returning to the main menu...");
-            return null;
         }
     }
 
