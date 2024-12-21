@@ -25,6 +25,8 @@ public class FileManager {
     private static final String CONVERSATIONS_FILE = "C:/Users/moham/FBsystem/src/main/java/Conversations.txt";
     private static final String LIKES_FILE         = "C:/Users/moham/FBsystem/src/main/java/likes.txt";
     private static final String DIS_LIKES_FILE     = "C:/Users/moham/FBsystem/src/main/java/dislikes.txt";
+    private static final String TAGGED_POSTS       = "C:/Users/moham/FBsystem/src/main/java/tagedposts";
+
 
     public void readDataFromFile() {
         DataStore dataStore = DataStore.getInstance();
@@ -43,6 +45,8 @@ public class FileManager {
 
         readLikes(DIS_LIKES_FILE,dataStore,false);
 
+        readTaggedPosts();
+
     }
     public void writeDataToFile() {
 
@@ -60,6 +64,8 @@ public class FileManager {
 
         writeLikes(DIS_LIKES_FILE,false);
 
+        writeTaggedPosts();
+
     }
 
     public void readUsers() {
@@ -76,7 +82,6 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-
     private void processUserBlock(String block, DataStore dataStore) {
         String[] lines = block.split("\\r?\\n");
 
@@ -117,8 +122,6 @@ public class FileManager {
 
         dataStore.addUser(user);
     }
-
-    // كتابة المستخدمين إلى الملف
     public void writeUsers() {
         DataStore dataStore = DataStore.getInstance();
 
@@ -576,6 +579,71 @@ public class FileManager {
             e.printStackTrace();
         }
     }
+
+    public void readTaggedPosts() {
+        DataStore dataStore = DataStore.getInstance();
+
+        try {
+            String content = Files.readString(Path.of(TAGGED_POSTS));
+            String[] blocks = content.split("\\r?\\n\\r?\\n");
+
+            for (String block : blocks) {
+                processTaggedPostBlock(block.trim(), dataStore);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void processTaggedPostBlock(String block, DataStore dataStore) {
+        String[] lines = block.split("\\r?\\n");
+
+        if (lines.length < 2) {
+            System.out.println("Invalid block format: " + block);
+            return;
+        }
+
+        // السطر الأول: معرف المنشور
+        int postId = Integer.parseInt(lines[0].trim());
+
+        // بقية الأسطر: أسماء المستخدمين المميزين
+        for (int i = 1; i < lines.length; i++) {
+            String username = lines[i].trim();
+
+            // البحث عن المستخدم وإضافة المنشور إلى قائمة taggedPosts
+            User user = dataStore.findUserByUsername(username);
+            if (user != null) {
+                user.addTaggedPost(postId);
+            } else {
+                System.out.println("User not found: " + username);
+            }
+        }
+    }
+    public void writeTaggedPosts() {
+        DataStore dataStore = DataStore.getInstance();
+
+        try {
+            StringBuilder content = new StringBuilder();
+
+            for (Post post : dataStore.getPosts()) {
+                // جمع المستخدمين المميزين لكل منشور
+                List<String> taggedUsers = post.getTaggedUsersForPost(dataStore);
+
+                if (!taggedUsers.isEmpty()) {
+                    content.append(post.getId()).append("\n");
+                    for (String username : taggedUsers) {
+                        content.append(username).append("\n");
+                    }
+                    content.append("\n"); // فصل بين ال blocks
+                }
+            }
+
+            Files.writeString(Path.of(TAGGED_POSTS), content.toString());
+            System.out.println("Tagged posts written successfully to " + TAGGED_POSTS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 }

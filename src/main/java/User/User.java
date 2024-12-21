@@ -14,6 +14,7 @@ public class User {
     private String gender;
     private Date birthdate;
     private List<Friend> friends;
+    private List<Integer> taggedPosts; // قائمة المنشورات المميزة
 
     public User( String username, String email, String password, String gender, Date birthdate) {
         this.username = username;
@@ -22,6 +23,8 @@ public class User {
         this.gender = gender;
         this.birthdate = birthdate;
         this.friends = new ArrayList<>();
+        this.taggedPosts = new ArrayList<>(); // تهيئة القائمة
+
     }
 
     // Getters and Setters
@@ -194,7 +197,15 @@ public class User {
         }
         return true;
     }
+    public List<Integer> getTaggedPosts() {
+        return taggedPosts;
+    }
 
+    public void addTaggedPost(int postId) {
+        if (!taggedPosts.contains(postId)) {
+            taggedPosts.add(postId);
+        }
+    }
 
 
 

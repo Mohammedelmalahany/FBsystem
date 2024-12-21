@@ -5,8 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import DataStore.DataStore;
 import java.util.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
@@ -222,6 +220,7 @@ public class ProgDisplay {
                 System.out.println("Invalid choice! Please try again.");
         }
     }
+
     public void manageUserConversations(User user) {
         Scanner scanner = new Scanner(System.in);
 
@@ -325,6 +324,216 @@ public class ProgDisplay {
             }
         }
     }
+
+    public void createNewConversation(User currentUser) {
+        Scanner scanner = new Scanner(System.in);
+        DataStore dataStore = DataStore.getInstance();
+
+        String conversationName = "";
+        while (true) {
+            System.out.print("Enter a name for the new conversation (or 0 to go back): ");
+            conversationName = scanner.nextLine();
+            if (conversationName.equals("0")) {
+                System.out.println("Operation cancelled. Returning to the previous menu.");
+                return;
+            }
+            if (!conversationName.isEmpty()) {
+                break;
+            } else {
+                System.out.println("Conversation name cannot be empty. Please try again.");
+            }
+        }
+
+        int participantCount = 0;
+        while (true) {
+            System.out.print("How many participants do you want to add (including yourself)? (Enter 0 to go back): ");
+            if (scanner.hasNextInt()) {
+                participantCount = scanner.nextInt();
+                scanner.nextLine();
+                if (participantCount == 0) {
+                    System.out.println("Operation cancelled. Returning to the previous menu.");
+                    return;
+                } else if (participantCount >= 2) {
+                    break;
+                } else {
+                    System.out.println("A conversation must have at least 2 participants. Please try again.");
+                }
+            } else {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine();
+            }
+        }
+
+
+        List<Integer> participantIds = new ArrayList<>();
+        participantIds.add(currentUser.getId());
+        System.out.println("You are added to the conversation automatically.");
+
+        for (int i = 1; i < participantCount; i++) {
+            while (true) {
+                System.out.print("Enter the username of participant " + i + " (or 0 to go back): ");
+                String username = scanner.nextLine();
+
+                if (username.equals("0")) {
+                    System.out.println("Operation cancelled. Returning to the previous menu.");
+                    return;
+                }
+
+
+                User user = dataStore.findUserByUsername(username);
+                if (user != null) {
+                    if (participantIds.contains(user.getId())) {
+                        System.out.println("This user is already added. Please enter a different username.");
+                    } else {
+                        participantIds.add(user.getId());
+                        System.out.println("User " + username + " added to the conversation.");
+                        break;
+                    }
+                } else {
+                    System.out.println("User not found. Please enter a valid username.");
+                }
+            }
+        }
+
+
+        Conversation newConversation = new Conversation(conversationName);
+        newConversation.setId();
+        newConversation.setUserIds(participantIds);
+        dataStore.addConversation(newConversation);
+
+        System.out.println("Conversation '" + conversationName + "' created successfully with ID: " + newConversation.getId());
+    }
+
+    public void createNewPost(User currentUser) {
+        Scanner scanner = new Scanner(System.in);
+        DataStore dataStore = DataStore.getInstance();
+
+        StringBuilder content = new StringBuilder(); // محتوى المنشور
+        String privacy = ""; // خصوصية المنشور
+        List<String> taggedUsers = new ArrayList<>(); // قائمة المستخدمين المميزين
+        int currentStep = 1; // الخطوة الحالية
+
+        while (true) {
+            switch (currentStep) {
+                case 1: // إدخال محتوى المنشور
+                    System.out.print("Enter the content of your post (or enter 0 to go back): ");
+                    content = new StringBuilder(scanner.nextLine());
+                    if (content.toString().equals("0")) {
+                        System.out.println("No previous step. Exiting...");
+                        return; // لا يوجد مرحلة سابقة
+                    } else if (!content.isEmpty()) {
+                        currentStep++; // الانتقال إلى المرحلة التالية
+                    } else {
+                        System.out.println("Content cannot be empty. Please try again.");
+                    }
+                    break;
+
+                case 2: // اختيار الخصوصية
+                    System.out.println("Select the privacy for your post:");
+                    System.out.println("1. Public");
+                    System.out.println("2. Private");
+                    System.out.println("0. Go back");
+                    System.out.print("Enter your choice: ");
+                    if (scanner.hasNextInt()) {
+                        int privacyChoice = scanner.nextInt();
+                        scanner.nextLine(); // تنظيف الإدخال
+
+                        if (privacyChoice == 0) {
+                            currentStep--; // العودة إلى المرحلة السابقة
+                        } else if (privacyChoice == 1) {
+                            privacy = "public";
+                            currentStep++; // الانتقال إلى المرحلة التالية
+                        } else if (privacyChoice == 2) {
+                            privacy = "private";
+                            currentStep++; // الانتقال إلى المرحلة التالية
+                        } else {
+                            System.out.println("Invalid choice. Please enter 1, 2, or 0.");
+                        }
+                    } else {
+                        System.out.println("Invalid input. Please enter a valid number.");
+                        scanner.nextLine(); // تنظيف الإدخال الخاطئ
+                    }
+                    break;
+
+                case 3: // إضافة Tagged Users
+                    System.out.print("Do you want to tag users in this post? (yes/no or 0 to go back): ");
+                    String choice = scanner.nextLine().toLowerCase();
+
+                    switch (choice) {
+                        case "0" -> currentStep--; // العودة إلى المرحلة السابقة
+                        case "yes" -> {
+                            while (true) {
+                                System.out.print("How many users do you want to tag? (Enter 0 to skip): ");
+                                if (scanner.hasNextInt()) {
+                                    int tagCount = scanner.nextInt();
+                                    scanner.nextLine(); // تنظيف الإدخال
+
+                                    if (tagCount == 0) {
+                                        break; // تخطي إضافة Tagged Users
+                                    } else if (tagCount > 0) {
+                                        for (int i = 0; i < tagCount; i++) {
+                                            System.out.print("Enter the username of user " + (i + 1) + " (or enter 0 to go back): ");
+                                            String username = scanner.nextLine();
+
+                                            if (username.equals("0")) {
+                                                currentStep--; // العودة إلى المرحلة السابقة
+                                                break;
+                                            }
+
+                                            User taggedUser = dataStore.findUserByUsername(username);
+
+                                            if (taggedUser != null) {
+                                                taggedUsers.add(username); // إضافة اسم المستخدم إلى قائمة Tagged Users
+                                                System.out.println("User @" + username + " has been tagged.");
+                                            } else {
+                                                System.out.println("User " + username + " not found. Please try again.");
+                                                i--; // السماح بإعادة المحاولة
+                                            }
+                                        }
+                                        break; // الانتهاء من إضافة Tagged Users
+                                    } else {
+                                        System.out.println("Invalid number. Please enter a valid number of users.");
+                                    }
+                                } else {
+                                    System.out.println("Invalid input. Please enter a number.");
+                                    scanner.nextLine(); // تنظيف الإدخال الخاطئ
+                                }
+                            }
+                            currentStep++; // الانتقال إلى المرحلة التالية
+                        }
+                        case "no" -> currentStep++; // الانتقال إلى المرحلة التالية
+                        default -> System.out.println("Invalid choice. Please enter 'yes', 'no', or 0.");
+                    }
+                    break;
+
+                case 4: // إنشاء المنشور وإضافته إلى DataStore
+                    // إضافة أسماء المستخدمين المميزين إلى محتوى المنشور
+                    for (String taggedUser : taggedUsers) {
+                        content.append(" @").append(taggedUser);
+                    }
+
+                    // إنشاء البوست
+                    Post newPost = new Post(content.toString(), privacy, currentUser.getId());
+                    newPost.setId(); // توليد ID فريد للبوست
+                    dataStore.addPost(newPost); // إضافة البوست إلى DataStore
+
+                    // إضافة معرف المنشور لكل مستخدم في قائمة Tagged Users
+                    for (String username : taggedUsers) {
+                        User taggedUser = dataStore.findUserByUsername(username);
+                        if (taggedUser != null) {
+                            taggedUser.addTaggedPost(newPost.getId());
+                        }
+                    }
+
+                    System.out.println("Post created successfully with ID: " + newPost.getId());
+                    System.out.println("Content: " + content);
+                    System.out.println("Privacy: " + privacy);
+
+                    return; // إنهاء العملية
+            }
+        }
+    }
+
 
 }
 
