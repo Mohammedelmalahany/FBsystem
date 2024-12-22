@@ -18,15 +18,15 @@ import Friend.Friend;
 @SuppressWarnings("ALL")
 public class FileManager {
 
-    private static final String USERS_FILE         = "C:/Users/moham/FBsystem/src/main/java/users.txt";
-    private static final String POSTS_FILE         = "C:/Users/moham/FBsystem/src/main/java/posts.txt";
-    private static final String COMMENTS_FILE      = "C:/Users/moham/FBsystem/src/main/java/comments.txt";
-    private static final String MESSAGES_FILE      = "C:/Users/moham/FBsystem/src/main/java/messages.txt";
-    private static final String CONVERSATIONS_FILE = "C:/Users/moham/FBsystem/src/main/java/Conversations.txt";
-    private static final String LIKES_FILE         = "C:/Users/moham/FBsystem/src/main/java/likes.txt";
-    private static final String DIS_LIKES_FILE     = "C:/Users/moham/FBsystem/src/main/java/dislikes.txt";
-    private static final String TAGGED_POSTS       = "C:/Users/moham/FBsystem/src/main/java/tagedposts";
-
+    private static final String USERS_FILE           = "C:/Users/moham/FBsystem/src/main/java/users.txt";
+    private static final String POSTS_FILE           = "C:/Users/moham/FBsystem/src/main/java/posts.txt";
+    private static final String COMMENTS_FILE        = "C:/Users/moham/FBsystem/src/main/java/comments.txt";
+    private static final String MESSAGES_FILE        = "C:/Users/moham/FBsystem/src/main/java/messages.txt";
+    private static final String CONVERSATIONS_FILE   = "C:/Users/moham/FBsystem/src/main/java/Conversations.txt";
+    private static final String LIKES_FILE           = "C:/Users/moham/FBsystem/src/main/java/likes.txt";
+    private static final String DIS_LIKES_FILE       = "C:/Users/moham/FBsystem/src/main/java/dislikes.txt";
+    private static final String TAGGED_POSTS         = "C:/Users/moham/FBsystem/src/main/java/tagedposts";
+    private static final String FRIEND_REQUESTS_FILE = "C:/Users/moham/FBsystem/src/main/java/friendrequests";
 
     public void readDataFromFile() {
         DataStore dataStore = DataStore.getInstance();
@@ -47,6 +47,8 @@ public class FileManager {
 
         readTaggedPosts();
 
+        readFriendRequests();
+
     }
     public void writeDataToFile() {
 
@@ -65,6 +67,8 @@ public class FileManager {
         writeLikes(DIS_LIKES_FILE,false);
 
         writeTaggedPosts();
+
+        writeFriendRequests();
 
     }
 
@@ -152,7 +156,7 @@ public class FileManager {
             }
 
             // كتابة النص النهائي إلى الملف
-            Files.writeString(Path.of("users.txt"), sb.toString());
+            Files.writeString(Path.of(USERS_FILE), sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -602,14 +606,11 @@ public class FileManager {
             return;
         }
 
-        // السطر الأول: معرف المنشور
         int postId = Integer.parseInt(lines[0].trim());
 
-        // بقية الأسطر: أسماء المستخدمين المميزين
         for (int i = 1; i < lines.length; i++) {
             String username = lines[i].trim();
 
-            // البحث عن المستخدم وإضافة المنشور إلى قائمة taggedPosts
             User user = dataStore.findUserByUsername(username);
             if (user != null) {
                 user.addTaggedPost(postId);
@@ -625,7 +626,6 @@ public class FileManager {
             StringBuilder content = new StringBuilder();
 
             for (Post post : dataStore.getPosts()) {
-                // جمع المستخدمين المميزين لكل منشور
                 List<String> taggedUsers = post.getTaggedUsersForPost(dataStore);
 
                 if (!taggedUsers.isEmpty()) {
@@ -633,7 +633,7 @@ public class FileManager {
                     for (String username : taggedUsers) {
                         content.append(username).append("\n");
                     }
-                    content.append("\n"); // فصل بين ال blocks
+                    content.append("\n");
                 }
             }
 
@@ -644,6 +644,77 @@ public class FileManager {
         }
     }
 
+    public void readFriendRequests() {
+        DataStore dataStore = DataStore.getInstance();
+
+        try {
+            String content = Files.readString(Path.of(FRIEND_REQUESTS_FILE));
+            String[] blocks = content.split("\\r?\\n\\r?\\n"); // تقسيم البيانات إلى كتل بناءً على الأسطر الفارغة
+
+            for (String block : blocks) {
+                processFriendRequestsBlock(block.trim(), dataStore); // معالجة كل كتلة
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void processFriendRequestsBlock(String block, DataStore dataStore) {
+        if (block.isEmpty()) return; // إذا كانت الكتلة فارغة، يتم تخطيها
+
+        String[] lines = block.split("\\r?\\n"); // تقسيم الكتلة إلى أسطر
+        if (lines.length < 2) {
+            System.out.println("Invalid block format: " + block);
+            return;
+        }
+
+        // السطر الأول يحتوي على معرف المستخدم
+        int userId;
+        try {
+            userId = Integer.parseInt(lines[0].trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid user ID format in block: " + block);
+            return;
+        }
+
+        // باقي الأسطر تحتوي على أسماء المستخدمين
+        User user = dataStore.getUserById(userId);
+        if (user == null) {
+            System.out.println("User with ID " + userId + " not found.");
+            return;
+        }
+
+        for (int i = 1; i < lines.length; i++) {
+            String username = lines[i].trim();
+            if (!username.isEmpty()) {
+                user.addFriendRequest(username);
+            }
+        }
+    }
+    public void writeFriendRequests() {
+        DataStore dataStore = DataStore.getInstance();
+
+        try {
+            StringBuilder content = new StringBuilder();
+
+            for (User user : dataStore.getUsers()) {
+                List<String> friendRequests = user.getFriendRequests();
+
+                // إذا كان للمستخدم طلبات صداقة
+                if (!friendRequests.isEmpty()) {
+                    content.append(user.getId()).append("\n"); // كتابة معرف المستخدم
+                    for (String username : friendRequests) {
+                        content.append(username).append("\n"); // كتابة اسم المستخدم في كل سطر
+                    }
+                    content.append("\n"); // فصل بين المستخدمين بسطر فارغ
+                }
+            }
+
+            Files.writeString(Path.of(FRIEND_REQUESTS_FILE ), content.toString());
+            System.out.println("Friend requests written successfully to " + FRIEND_REQUESTS_FILE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

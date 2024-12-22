@@ -330,6 +330,77 @@ public class User {
         }
     }
 
+    public void viewFriendsPosts(Scanner scanner) {
+        DataStore dataStore = DataStore.getInstance();
 
+        List<String> friendUsernames = this.getFriendUsernames();
+        if (friendUsernames.isEmpty()) {
+            System.out.println("You have no friends to view posts from.");
+            return;
+        }
+
+        System.out.println("Friends list:");
+        for (int i = 0; i < friendUsernames.size(); i++) {
+            System.out.println((i + 1) + ". " + friendUsernames.get(i));
+        }
+
+        System.out.print("Enter the number of the friend to view their posts (or 0 to go back): ");
+        String input = scanner.nextLine();
+
+        if (!input.matches("\\d+")) {
+            System.out.println("Invalid input. Please enter a valid number.");
+            return;
+        }
+
+        int choice = Integer.parseInt(input);
+
+        if (choice == 0) {
+            return; // Exit to the previous menu
+        }
+
+        if (choice < 1 || choice > friendUsernames.size()) {
+            System.out.println("Invalid choice. Please try again.");
+            return;
+        }
+
+        String friendUsername = friendUsernames.get(choice - 1);
+        User friend = dataStore.findUserByUsername(friendUsername);
+
+        if (friend == null) {
+            System.out.println("Friend not found.");
+            return;
+        }
+
+        // Check restriction
+        Friend friendship = this.getFriends().stream()
+                .filter(f -> f.getUserid() == friend.getId())
+                .findFirst()
+                .orElse(null);
+
+        if (friendship == null) {
+            System.out.println("Friendship data not found.");
+            return;
+        }
+
+        boolean isRestricted = friendship.isRestricted();
+
+        List<Post> friendPosts = dataStore.getPostsByUserId(friend.getId());
+        System.out.println("Posts by " + friend.getUsername() + ":");
+        boolean hasPosts = false;
+
+        for (Post post : friendPosts) {
+            if (!isRestricted || post.getPrivacy().equals("public")) {
+                System.out.println("Post ID: " + post.getId());
+                System.out.println("Content: " + post.getContent());
+                System.out.println("Privacy: " + post.getPrivacy());
+                System.out.println("---------------------------");
+                hasPosts = true;
+            }
+        }
+
+        if (!hasPosts) {
+            System.out.println("No posts available to display.");
+        }
+    }
 
 }

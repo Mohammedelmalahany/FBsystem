@@ -18,7 +18,7 @@ public class Friend {
     }
 
     public boolean isRestricted() {
-        return !isRestricted;
+        return isRestricted;
     }
 
     public void setRestricted(boolean restricted) {

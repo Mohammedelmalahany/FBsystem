@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import Post.Post;
-
+import Friend.Friend;
 public class ProgDisplay {
 
     public void displayWelcomeScreen(DataStore dataStore) {
@@ -37,6 +37,7 @@ public class ProgDisplay {
                     User registeredUser = registerAccount(dataStore);
                     if (registeredUser != null) {
                         System.out.println("Welcome, " + registeredUser.getUsername() + "! You are now registered.");
+                        userActions(scanner,registeredUser);
                         return;
                     }
                     break;
@@ -45,11 +46,12 @@ public class ProgDisplay {
                     User loggedInUser = login(dataStore.getUsers());
                     if (loggedInUser != null) {
                         System.out.println("Welcome, " + loggedInUser.getUsername() + "! You are now logged in.");
-                        return; // إنهاء الشاشة والانتقال إلى المرحلة التالية
+                        userActions(scanner,loggedInUser);
+                        return;
                     }
                     break;
 
-                case 3: // الخروج من النظام
+                case 3:
                     System.out.println("Exiting the program. Goodbye!");
                     return;
 
@@ -209,56 +211,57 @@ public class ProgDisplay {
         }
     }
 
-    private static void userActions(Scanner scanner, User user) {
+    private static void userActions(Scanner scanner, User currentUser) {
+        DataStore dataStore = DataStore.getInstance();
+        ProgDisplay progDisplay = new ProgDisplay();
+
         while (true) {
             System.out.println("\n--- User Actions ---");
-            System.out.println("1. Browse the main menu");
-            //show posts according to the privacy level then
-            // To make the user interact with posts after they are shown to him,
-            // we can create a function that displays posts one by one,
-            // and then asks the user to choose whether he wants to interact with the current post (write a comment, like, etc.).
-            // We'll add a mechanism that allows them to choose between "Engage", "Skip to next post", or "Exit".
-            //after engage read the last tow-lines of the comment of the conversation, it is the same logic
-
-            System.out.println("2. Write a post");
-            //add the post created to datastore and don't forget tagged users(take the usernames and check if there exist or not)
-
+            System.out.println("1. Write a post");
+            System.out.println("2. Create a conversation");
             System.out.println("3. Search for a user");
-            //take the username, ask user if he wants to see posts(read the comment of Browse the main menu)
-            // or add friend(contact with me for more explanation)
+            System.out.println("4. See friends");
+            System.out.println("5. Browse conversations");
+            System.out.println("6. Shared connections analysis");
+            System.out.println("7. See tagged posts");
+            System.out.println("8. See friend requests");
+            System.out.println("0. Log out");
+            System.out.print("Your choice: ");
 
-            System.out.println("4. See friend's posts");
-            //ask user to choose one of his friend
+            String choice = scanner.nextLine().trim();
 
-            System.out.println("5. Browse conversations ");
-            //show conversations he participated in
-            // then asks the user to choose whether he wants to interact with the current conversation,
-            // show him all messages in this conversation then ask if he wants to send message or like||dislike a message,
-            // if he chooses to like ask about the id of the message that you already printed its id
-
-            System.out.println("6. Shared Connections Analysis");
-            //Explanation of the requirement:
-            //8. Display friendship between users using the + operator:
-            //Description:
-            //When using the + operator between two users (User1 + User2), all common posts that both users can see are displayed based on their privacy settings.
-            //How does this work?:
-            //The lists of posts for each user are compared.
-            //Shared posts are posts that were created by one user and allowed to be seen by the other user.
-            //Shared posts are displayed.
-
-            //9. Display mutual friends using the & operator:
-            //Description:
-            //When using the & operator between two users (User1 & User2), the list of mutual friends is displayed.
-            //How does this work?:
-            //The list of friends for each user is compared.
-            //Mutual friends are users that appear in both lists.
-            //The list of mutual friends is displayed.
-            System.out.println("7. Log out");
-            logout();
-            return;
-
+            switch (choice) {
+                case "1":
+                    progDisplay.createNewPost(currentUser);
+                    break;
+                case "2":
+                    progDisplay.createNewConversation(currentUser);
+                    break;
+                case "3":
+                    progDisplay.searchForUser(scanner, currentUser, dataStore);
+                    break;
+                case "4":
+                    currentUser.viewFriendsPosts(scanner);
+                    break;
+                case "5":
+                    progDisplay.manageUserConversations(currentUser);
+                    break;
+                case "6":
+                    sharedConnectionsAnalysis(scanner);
+                    break;
+                case "7":
+                    displayTaggedPosts(currentUser, dataStore);
+                    break;
+                case "8":
+                    currentUser.viewFriendRequests(scanner);
+                    break;
+                case "0":
+                    logout();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
         }
-
     }
 
     private static void logout() {
@@ -266,6 +269,7 @@ public class ProgDisplay {
         System.out.println("You have successfully logged out.");
         System.out.println("Returning to the main menu...");
     }
+
     private static void clearConsole() {
         try {
             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
@@ -273,7 +277,6 @@ public class ProgDisplay {
             System.out.println("Unable to clear console.");
         }
     }
-
 
     private static void sharedConnectionsAnalysis(Scanner scanner) {
         DataStore dataStore = DataStore.getInstance();
@@ -703,7 +706,22 @@ public class ProgDisplay {
         }
     }
 
-
+    private static void displayTaggedPosts(User currentUser, DataStore dataStore) {
+        List<Integer> taggedPostIds = currentUser.getTaggedPosts();
+        if (taggedPostIds.isEmpty()) {
+            System.out.println("No tagged posts found.");
+            return;
+        }
+        System.out.println("\nTagged Posts:");
+        for (int postId : taggedPostIds) {
+            Post post = dataStore.findPostById(postId);
+            if (post != null) {
+                System.out.println("Post ID: " + post.getId());
+                System.out.println("Content: " + post.getContent());
+                System.out.println("---------------");
+            }
+        }
+    }
 
 
 
